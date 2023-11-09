@@ -108,10 +108,11 @@ namespace APIPruebaTecnica.Controllers
             try
             {
                 usuario.FechaCreacion = DateTime.Now;
+                usuario.Estado = true;
                 _dbContext.Usuarios.Add(usuario);
                 await _dbContext.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetUsuario), new { Id = usuario.Id }, usuario);
+                return Ok(await _dbContext.Usuarios.ToListAsync());
             }
             catch (Exception)
             {
