@@ -16,7 +16,7 @@ namespace APIPruebaTecnica.Models
 
         public bool Estado { get; set; }
 
-        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public DateTime? FechaEliminacion { get; set; }
 
