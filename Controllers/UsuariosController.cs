@@ -1,6 +1,7 @@
 ﻿using APIPruebaTecnica.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace APIPruebaTecnica.Controllers
 {
@@ -24,7 +25,7 @@ namespace APIPruebaTecnica.Controllers
                 {
                     return NotFound("No hay usuarios para consultar.");
                 }
-                return  _dbContext.Usuarios.ToList();
+                return _dbContext.Usuarios.Where(x => x.Estado == true).ToList();
             }
             catch (Exception)
             {
@@ -56,8 +57,8 @@ namespace APIPruebaTecnica.Controllers
             }
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<Usuario>> GetUsuarioByCedula(int cedula)
+        [HttpPost]
+        public ActionResult<IEnumerable<Usuario>> GetUsuariosByFilter([FromBody] filtroUsuario filtroUsuario)
         {
             try
             {
@@ -66,12 +67,20 @@ namespace APIPruebaTecnica.Controllers
                     return NotFound("No hay usuarios para consultar.");
                 }
 
-                var usuario = _dbContext.Usuarios.Where(x => x.Cedula == cedula).ToList();
-                if (usuario == null)
+                var usuarios = new List<Usuario>();
+
+                if (filtroUsuario.Cedula > 0 && filtroUsuario.NombreCompleto == string.Empty) usuarios = _dbContext.Usuarios.Where(x => x.Cedula == filtroUsuario.Cedula).ToList();
+                if (filtroUsuario.Cedula == 0 && filtroUsuario.NombreCompleto != string.Empty) usuarios = _dbContext.Usuarios.Where(x => (x.Nombre + " " + x.Apellido).Trim().Contains(filtroUsuario.NombreCompleto)).ToList();
+                if (filtroUsuario.Cedula > 0 && filtroUsuario.NombreCompleto != string.Empty)
+                {
+                    usuarios = _dbContext.Usuarios.Where(x => x.Cedula == filtroUsuario.Cedula && (x.Nombre + " " + x.Apellido).Trim().Contains(filtroUsuario.NombreCompleto)).ToList();
+                }
+                
+                if (usuarios.Count <= 0)
                 {
                     return NotFound("No hay usuarios que coincidan con los criterios de busqueda.");
                 }
-                return usuario;
+                return usuarios;
             }
             catch (Exception)
             {
@@ -112,7 +121,7 @@ namespace APIPruebaTecnica.Controllers
                 _dbContext.Usuarios.Add(usuario);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(await _dbContext.Usuarios.ToListAsync());
+                return Ok(await _dbContext.Usuarios.Where(x => x.Estado == true).ToListAsync());
             }
             catch (Exception)
             {
@@ -143,7 +152,7 @@ namespace APIPruebaTecnica.Controllers
 
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(await _dbContext.Usuarios.ToListAsync());
+                return Ok(await _dbContext.Usuarios.Where(x => x.Estado == true).ToListAsync());
             }
             catch (Exception)
             {
@@ -153,7 +162,7 @@ namespace APIPruebaTecnica.Controllers
 
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuario(Int64 id)
         {
             if (_dbContext.Usuarios == null)
@@ -173,7 +182,7 @@ namespace APIPruebaTecnica.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            return Ok();
+            return Ok(_dbContext.Usuarios.Where(x => x.Estado == true).ToList());
         }
     }
 }

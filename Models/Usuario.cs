@@ -21,4 +21,11 @@ namespace APIPruebaTecnica.Models
         public DateTime? FechaEliminacion { get; set; }
 
     }
+
+    public class filtroUsuario
+    {
+        public int Cedula { get; set; }
+        public string NombreCompleto { get; set; }
+
+    }
 }
